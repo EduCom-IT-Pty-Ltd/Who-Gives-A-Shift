@@ -6,8 +6,8 @@ the pay cycle, and submit them for review.
 
 - **Pay cycle:** Thursday → Wednesday
 - **Sign-in:** Microsoft Entra ID, single-tenant, MSAL auth-code + PKCE
-- **Roles:** Entra security groups
-- **Submission:** emailed from the manager's own mailbox via Microsoft Graph to `ahaworth@educomit.com.au`
+- **Roles:** Standard, Manager and Admin — enforced by Entra security groups
+- **Submission:** emailed from the manager's own mailbox via Microsoft Graph to the reviewer set in Admin settings
 - **Stack:** Next.js 15 (App Router) · TypeScript · Drizzle · Neon Postgres · Vercel
 
 ---
@@ -27,7 +27,7 @@ correct the actual start, finish and break, add any unrostered days, then
 *Submit for review*.
 
 Submitting **locks the pay period** — no further roster or hours edits for those
-dates — and emails the reviewer a summary with two CSVs attached (per-person
+dates — and emails the configured reviewer a summary with two CSVs attached (per-person
 totals, and shift-by-shift detail). The email is sent **on behalf of the manager
 who submitted it**: it leaves from their mailbox, appears in their Sent Items,
 and a reply goes straight back to them rather than to a shared service account.
@@ -140,6 +140,18 @@ src/
     submission.ts          Email HTML and CSV exports
 ```
 
+### Access levels
+
+| Level | Who it is | What they can do |
+| --- | --- | --- |
+| **Standard** | An eligible Entra user rostered at a store | Sign in and see only their published shifts. |
+| **Manager** | A member of that store's Entra manager group | Build and publish that store's roster; prepare, correct and submit its hours. |
+| **Admin** | A member of `SG-WGAS-Admins` | Everything a manager can do across all stores, plus stores and operational settings. |
+
+The `manager`/`staff` value shown against a person on a roster is a roster label,
+not an access grant. Store-management access is always determined by the Entra
+manager group configured for that store.
+
 ### A few decisions worth knowing
 
 **Shifts store a local date plus wall-clock times, not instants.** A roster
@@ -157,6 +169,11 @@ with *Re-send email*; a period that reached payroll but stayed editable is not.
 *may manage* a store; the `store_members` table decides who *appears on* its
 roster. That is why you can roster staff today without any per-store groups
 existing — admins manage everything until you create them.
+
+**Reviewer email is an Admin setting.** The first saved value in **Admin → Submission
+settings** is used for new submissions, which makes non-production testing easy.
+Until it has been saved, `REVIEWER_EMAIL` remains the safe deployment fallback.
+Already-submitted periods retain the address they were sent to.
 
 **Mail uses two different Graph flows.** The submission goes out delegated
 (on-behalf-of the manager). The reviewer's approve / send-back notice is the one

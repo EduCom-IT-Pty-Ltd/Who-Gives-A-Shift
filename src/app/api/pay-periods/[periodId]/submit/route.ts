@@ -5,7 +5,7 @@ import { payPeriods } from "@/db/schema";
 import { authenticate } from "@/lib/auth/context";
 import { recordAudit } from "@/lib/audit";
 import { badRequest, conflict, json, route } from "@/lib/api";
-import { appBaseUrl, reviewerEmail } from "@/lib/env";
+import { appBaseUrl } from "@/lib/env";
 import { isGraphConfigured, sendMailAsUser } from "@/lib/graph";
 import { isPayPeriodSubmittable, payPeriodFor } from "@/lib/pay-period";
 import { createReviewToken } from "@/lib/review-token";
@@ -18,6 +18,7 @@ import {
 } from "@/lib/submission";
 import { reportEntries } from "@/lib/report";
 import { requireManagedPeriod } from "@/lib/period-access";
+import { submissionReviewerSetting } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -59,7 +60,7 @@ export const POST = route(async (request: Request, { params }: Params) => {
   const entries = await reportEntries(periodId);
   if (!entries.length) throw badRequest("There are no hours to submit for this period");
 
-  const to = reviewerEmail();
+  const { email: to } = await submissionReviewerSetting();
   const submittedAt = period.submittedAt ?? new Date();
   const note = input.resend ? period.submissionNote : (input.note ?? null);
 

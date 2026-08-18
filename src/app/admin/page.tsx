@@ -17,14 +17,23 @@ interface StoreRow {
 
 const BLANK = { name: "", code: "", timezone: "Australia/Sydney", managerGroupId: "" };
 
+interface SettingsResponse {
+  email: string;
+  source: "settings" | "environment";
+}
+
 function Admin() {
   const me = useMe();
   const api = useApi();
   const stores = useAsync<StoreRow[]>(() => api<StoreRow[]>("/api/stores"), []);
+  const settings = useAsync<SettingsResponse>(() => api<SettingsResponse>("/api/settings"), []);
 
   const [draft, setDraft] = useState(BLANK);
   const [busy, setBusy] = useState(false);
+  const [settingsBusy, setSettingsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [reviewerEmail, setReviewerEmail] = useState("");
 
   if (!me.isAdmin) {
     return <Note tone="warn">This page is for tenant administrators.</Note>;
@@ -62,6 +71,22 @@ function Admin() {
     }
   };
 
+  const saveReviewer = async () => {
+    setSettingsBusy(true);
+    setSettingsError(null);
+    try {
+      await api(
+        "/api/settings",
+        patchBody({ submissionReviewerEmail: reviewerEmail.trim() || settings.data?.email }),
+      );
+      settings.reload();
+    } catch (e) {
+      setSettingsError(e instanceof Error ? e.message : "Could not update settings");
+    } finally {
+      setSettingsBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -73,6 +98,38 @@ function Admin() {
       </div>
 
       {error && <Note tone="bad">{error}</Note>}
+
+      <Card title="Submission settings">
+        <div className="space-y-3 p-4">
+          <p className="text-sm text-muted">
+            Timesheet submissions are sent to this reviewer. Change it here for testing without
+            redeploying the app. It does not change who sends the email: it still comes from the
+            manager who submits the cycle.
+          </p>
+          {settings.error && <Note tone="bad">{settings.error}</Note>}
+          {settingsError && <Note tone="bad">{settingsError}</Note>}
+          <Field
+            label="Submission reviewer email"
+            type="email"
+            placeholder="payroll@example.com"
+            value={reviewerEmail || settings.data?.email || ""}
+            onChange={(e) => setReviewerEmail(e.target.value)}
+            hint={
+              settings.data?.source === "environment"
+                ? "Using the deployment fallback until you save a value here."
+                : "Saved in the application settings."
+            }
+          />
+          <Button
+            variant="primary"
+            loading={settingsBusy}
+            disabled={!(reviewerEmail || settings.data?.email)}
+            onClick={() => void saveReviewer()}
+          >
+            Save reviewer email
+          </Button>
+        </div>
+      </Card>
 
       <Card title="Add a store">
         <div className="grid gap-3 p-4 sm:grid-cols-2">

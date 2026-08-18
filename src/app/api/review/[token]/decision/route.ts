@@ -4,12 +4,13 @@ import { getDb } from "@/db";
 import { payPeriods } from "@/db/schema";
 import { recordAudit } from "@/lib/audit";
 import { badRequest, conflict, json, route } from "@/lib/api";
-import { appBaseUrl, reviewerEmail } from "@/lib/env";
+import { appBaseUrl } from "@/lib/env";
 import { isGraphConfigured, sendMailAsApp } from "@/lib/graph";
 import { periodReport } from "@/lib/report";
 import { verifyReviewToken } from "@/lib/review-token";
 import { formatRange } from "@/lib/dates";
 import { formatHours } from "@/lib/shift-time";
+import { submissionReviewerSetting } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,8 @@ export const POST = route(async (request: Request, { params }: Params) => {
   if (report.submitterUpn && isGraphConfigured()) {
     const verdict = input.decision === "approved" ? "approved" : "sent back for changes";
     try {
-      await sendMailAsApp(reviewerEmail(), {
+      const { email: reviewer } = await submissionReviewerSetting();
+      await sendMailAsApp(reviewer, {
         to: [report.submitterUpn],
         subject: `Timesheet ${verdict} · ${report.summary.storeName} · ${report.summary.startDate} to ${report.summary.endDate}`,
         html: `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;color:#1c2029">

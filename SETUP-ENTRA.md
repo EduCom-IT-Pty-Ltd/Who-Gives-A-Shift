@@ -117,8 +117,9 @@ is the delegated `Mail.Send`.
 
 The approve / send-back notice is the one case with no signed-in user: the
 reviewer follows a capability link rather than logging in. That notice is sent
-from the reviewer's own mailbox (`REVIEWER_EMAIL`) by the app, which needs the
-application `Mail.Send`.
+from the reviewer's own mailbox by the app, which needs the application
+`Mail.Send`. Set that address in **Admin → Submission settings**; `REVIEWER_EMAIL`
+is used only until an admin saves the first setting.
 
 If you would rather not grant application `Mail.Send` at all, the app degrades
 cleanly — the decision is still recorded and the manager sees it in-app the next

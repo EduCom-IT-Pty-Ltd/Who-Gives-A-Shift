@@ -37,6 +37,16 @@ export const stores = pgTable("stores", {
 });
 
 /**
+ * Tenant-wide operational settings. The keyed row keeps this extensible while
+ * ensuring we never accidentally create multiple competing configurations.
+ */
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  submissionReviewerEmail: text("submission_reviewer_email").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
  * Provisioned just-in-time on first successful sign-in. `entraObjectId` is the
  * `oid` claim and is the only stable identifier — UPNs and emails change.
  */
@@ -181,6 +191,7 @@ export const auditLog = pgTable(
 );
 
 export type Store = typeof stores.$inferSelect;
+export type AppSettings = typeof appSettings.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type StoreMember = typeof storeMembers.$inferSelect;
 export type Shift = typeof shifts.$inferSelect;
