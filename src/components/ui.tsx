@@ -2,10 +2,12 @@
 
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "brand";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-accent text-accent-ink hover:opacity-90 border-transparent",
+  primary: "bg-accent text-accent-ink hover:brightness-110 border-transparent shadow-sm",
+  brand:
+    "bg-brand-coral-strong text-brand-coral-ink hover:brightness-110 border-transparent shadow-sm",
   secondary: "bg-surface text-ink hover:bg-surface-2 border-border-strong",
   ghost: "bg-transparent text-muted hover:text-ink hover:bg-surface-2 border-transparent",
   danger: "bg-transparent text-bad hover:bg-bad-soft border-transparent",
@@ -22,7 +24,7 @@ export function Button({
     <button
       {...props}
       disabled={props.disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${VARIANTS[variant]} ${className}`}
     >
       {loading && <Spinner />}
       {children}
@@ -52,7 +54,7 @@ export function Card({
 }) {
   return (
     <section
-      className={`overflow-hidden rounded-xl border border-border bg-surface ${className}`}
+      className={`overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_1px_2px_rgba(20,33,61,0.04)] ${className}`}
     >
       {(title || action) && (
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
@@ -73,10 +75,12 @@ export function Field({
 }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string }) {
   return (
     <label className={`block text-sm ${className}`}>
-      <span className="mb-1 block text-xs font-medium text-muted">{label}</span>
+      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">
+        {label}
+      </span>
       <input
         {...props}
-        className="w-full rounded-lg border border-border bg-surface px-3 py-2 outline-none focus:border-accent"
+        className="w-full rounded-xl border border-border bg-surface px-3 py-2 outline-none transition focus:border-accent"
       />
       {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
     </label>
@@ -97,7 +101,7 @@ export function Note({
     bad: "bg-bad-soft text-bad",
   } as const;
   return (
-    <div className={`rounded-lg px-3.5 py-2.5 text-sm ${tones[tone]}`} role="status">
+    <div className={`rounded-xl px-3.5 py-2.5 text-sm ${tones[tone]}`} role="status">
       {children}
     </div>
   );
@@ -119,7 +123,7 @@ export function Badge({
   } as const;
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${tones[tone]}`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-bold ${tones[tone]}`}
     >
       {children}
     </span>

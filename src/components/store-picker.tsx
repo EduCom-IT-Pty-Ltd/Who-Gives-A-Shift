@@ -28,7 +28,7 @@ export function StorePicker({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-border bg-surface px-3 py-2 outline-none focus:border-accent"
+        className="rounded-xl border border-border bg-surface px-3 py-2 outline-none transition focus:border-accent"
       >
         {stores.map((store) => (
           <option key={store.id} value={store.id}>

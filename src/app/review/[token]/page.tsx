@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
+import { BrandLockup } from "@/components/brand";
 import { Badge, Button, Card, Loading, Note } from "@/components/ui";
 import { formatDayLabel, formatRange, weekdayShort } from "@/lib/dates";
 import { formatHours, formatTimeRange } from "@/lib/shift-time";
@@ -82,7 +83,8 @@ export default function ReviewPage({ params }: { params: Promise<{ token: string
 
   if (!data) {
     return (
-      <main className="mx-auto max-w-lg p-6">
+      <main className="mx-auto max-w-lg space-y-4 p-6">
+        <BrandLockup size="md" />
         <Note tone="bad">{error ?? "This review link is not valid."}</Note>
       </main>
     );
@@ -94,11 +96,15 @@ export default function ReviewPage({ params }: { params: Promise<{ token: string
 
   return (
     <main className="mx-auto max-w-4xl space-y-4 p-4 sm:p-6">
-      <header>
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted">
-          Who Gives A Shift · timesheet review
-        </p>
-        <h1 className="text-xl font-semibold tracking-tight">{summary.storeName}</h1>
+      <header className="rounded-2xl border border-border bg-surface p-4 sm:p-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <BrandLockup />
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
+            Timesheet review
+          </span>
+        </div>
+        <div className="brand-rule mb-3 h-1 rounded-full" />
+        <h1 className="text-xl tracking-tight">{summary.storeName}</h1>
         <p className="text-sm text-muted">
           {formatRange(summary.startDate, summary.endDate)} · submitted by {summary.submittedBy} on{" "}
           {new Date(summary.submittedAt).toLocaleString("en-AU")}
@@ -124,13 +130,13 @@ export default function ReviewPage({ params }: { params: Promise<{ token: string
         action={
           <div className="flex gap-2">
             <a
-              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface-2"
+              className="rounded-full border border-border px-3 py-1.5 text-xs font-bold hover:bg-surface-2"
               href={`/api/review/${token}/csv?type=totals`}
             >
               Totals CSV
             </a>
             <a
-              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface-2"
+              className="rounded-full border border-border px-3 py-1.5 text-xs font-bold hover:bg-surface-2"
               href={`/api/review/${token}/csv?type=detail`}
             >
               Detail CSV
@@ -244,14 +250,14 @@ export default function ReviewPage({ params }: { params: Promise<{ token: string
         <Card title="Your decision">
           <div className="space-y-3 p-4">
             <label className="block text-sm">
-              <span className="mb-1 block text-xs font-medium text-muted">
+              <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">
                 Note (required if sending back)
               </span>
               <textarea
                 rows={3}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="w-full rounded-lg border border-border bg-surface px-3 py-2 outline-none focus:border-accent"
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2 outline-none transition focus:border-accent"
               />
             </label>
             <div className="flex flex-wrap gap-2">

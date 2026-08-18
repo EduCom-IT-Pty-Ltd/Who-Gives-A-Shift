@@ -53,7 +53,7 @@ export function Providers({ children }: { children: ReactNode }) {
   if (error) {
     return (
       <div className="grid min-h-dvh place-items-center p-6">
-        <div className="max-w-md rounded-xl border border-border bg-surface p-6 text-sm">
+        <div className="max-w-md rounded-2xl border border-border bg-surface p-6 text-sm">
           <h1 className="mb-2 text-base font-semibold">Configuration needed</h1>
           <p className="text-muted">{error}</p>
         </div>

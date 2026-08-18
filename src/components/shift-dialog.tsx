@@ -120,7 +120,7 @@ export function ShiftDialog({
           <select
             value={draft.userId}
             onChange={(e) => update("userId", e.target.value)}
-            className="w-full rounded-lg border border-border bg-surface px-3 py-2 outline-none focus:border-accent"
+            className="w-full rounded-xl border border-border bg-surface px-3 py-2 outline-none transition focus:border-accent"
           >
             {members.map((m) => (
               <option key={m.userId} value={m.userId}>

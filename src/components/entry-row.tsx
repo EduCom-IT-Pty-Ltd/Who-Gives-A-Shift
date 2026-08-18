@@ -5,7 +5,7 @@ import { formatDayLabel } from "@/lib/dates";
 import { crossesMidnight, formatHours, workedMinutes } from "@/lib/shift-time";
 import type { TimesheetEntryDto } from "@/lib/types";
 
-const CELL = "rounded-lg border border-border bg-surface px-2 py-1.5 outline-none focus:border-accent";
+const CELL = "rounded-xl border border-border bg-surface px-2 py-1.5 outline-none transition focus:border-accent";
 
 /**
  * One timesheet line. Edits are local until the field is committed, then saved;
@@ -142,7 +142,7 @@ export function EntryRow({
             aria-label="Remove this line"
             disabled={saving}
             onClick={() => void onDelete()}
-            className="rounded-lg px-2 py-1 text-sm text-muted hover:bg-bad-soft hover:text-bad"
+            className="rounded-full px-2 py-1 text-sm text-muted transition hover:bg-bad-soft hover:text-bad"
           >
             ✕
           </button>
