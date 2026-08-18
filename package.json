@@ -1,0 +1,36 @@
+{
+  "name": "who-gives-a-shift",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^4.5.0",
+    "@azure/msal-react": "^3.0.5",
+    "@neondatabase/serverless": "^1.0.0",
+    "drizzle-orm": "^0.44.0",
+    "jose": "^6.0.10",
+    "next": "^15.3.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.13.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "drizzle-kit": "^0.31.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.8.0"
+  }
+}
