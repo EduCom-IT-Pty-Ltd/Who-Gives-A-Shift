@@ -351,7 +351,7 @@ function Timesheets() {
       <SubmitDialog
         open={submitting}
         onClose={() => setSubmitting(false)}
-        reviewerEmail={data?.period.reviewerEmail ?? "ahaworth@educomit.com.au"}
+        reviewerEmail={data?.period.reviewerEmail ?? ""}
         startDate={range.startDate}
         endDate={range.endDate}
         totals={staffTotals}

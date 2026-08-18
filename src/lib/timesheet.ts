@@ -6,6 +6,7 @@ import { isPayPeriodSubmittable, payPeriodDays, type PayPeriodRange } from "@/li
 import { normaliseTime, workedMinutes } from "@/lib/shift-time";
 import type { PayPeriodDto, TimesheetEntryDto, TimesheetResponse } from "@/lib/types";
 import { listMembers } from "@/lib/members";
+import { submissionReviewerSetting } from "@/lib/settings";
 
 export async function findPeriod(storeId: string, startDate: string) {
   const [period] = await getDb()
@@ -84,11 +85,17 @@ export async function preparePeriod(
   return { periodId: period.id, seeded: rostered.length };
 }
 
+/**
+ * `reviewerEmail` is only stamped onto the row at submit time, so an open
+ * period falls back to the currently configured reviewer — that is who the
+ * submission will actually go to, and the UI must say so.
+ */
 export function toPeriodDto(
   storeId: string,
   range: PayPeriodRange,
   period: Awaited<ReturnType<typeof findPeriod>>,
   submittedByName: string | null,
+  configuredReviewerEmail: string,
 ): PayPeriodDto {
   return {
     id: period?.id ?? null,
@@ -99,7 +106,7 @@ export function toPeriodDto(
     submittedAt: period?.submittedAt?.toISOString() ?? null,
     submittedByName,
     submissionNote: period?.submissionNote ?? null,
-    reviewerEmail: period?.reviewerEmail ?? null,
+    reviewerEmail: period?.reviewerEmail ?? configuredReviewerEmail,
     reviewedAt: period?.reviewedAt?.toISOString() ?? null,
     reviewNote: period?.reviewNote ?? null,
   };
@@ -172,7 +179,8 @@ export async function loadTimesheet(
         .orderBy(asc(timesheetEntries.workDate), asc(timesheetEntries.startTime))
     : [];
 
-  const dto = toPeriodDto(store.id, range, period, submittedByName);
+  const { email: configuredReviewerEmail } = await submissionReviewerSetting();
+  const dto = toPeriodDto(store.id, range, period, submittedByName, configuredReviewerEmail);
   const submittable = options.isAdmin || isPayPeriodSubmittable(range, store.timezone);
 
   return {

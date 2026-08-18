@@ -60,7 +60,8 @@ export interface PayPeriodDto {
   submittedAt: string | null;
   submittedByName: string | null;
   submissionNote: string | null;
-  reviewerEmail: string | null;
+  /** The configured reviewer until submission stamps the address actually used. */
+  reviewerEmail: string;
   reviewedAt: string | null;
   reviewNote: string | null;
 }
