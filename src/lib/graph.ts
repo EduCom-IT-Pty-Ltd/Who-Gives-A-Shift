@@ -43,17 +43,61 @@ async function getAppToken(): Promise<string> {
   return appToken.value;
 }
 
-async function graphFetch(path: string, init: RequestInit = {}): Promise<Response> {
-  const token = await getAppToken();
+/** Calls Graph as the app, or as a user when `token` is supplied. */
+async function graphFetch(
+  path: string,
+  init: RequestInit = {},
+  token?: string,
+): Promise<Response> {
+  const bearer = token ?? (await getAppToken());
   return fetch(`${GRAPH}${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${token}`,
+      authorization: `Bearer ${bearer}`,
       "content-type": "application/json",
       ...(init.headers ?? {}),
     },
     cache: "no-store",
   });
+}
+
+/**
+ * On-behalf-of: swaps the caller's token for this API for a delegated Graph
+ * token. Everything sent this way comes from the signed-in person's own
+ * mailbox, so it lands in their Sent Items and replies go back to them.
+ */
+async function getDelegatedToken(userAssertion: string, scope: string): Promise<string> {
+  const tenantId = requireEnv("AZURE_TENANT_ID");
+  const body = new URLSearchParams({
+    client_id: requireEnv("AZURE_CLIENT_ID"),
+    client_secret: requireEnv("AZURE_CLIENT_SECRET"),
+    grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+    assertion: userAssertion,
+    scope,
+    requested_token_use: "on_behalf_of",
+  });
+
+  const res = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body,
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    // The overwhelmingly likely cause is a missing delegated permission, and
+    // the raw AADSTS blob does not say so in words anyone acts on.
+    if (text.includes("AADSTS65001") || text.includes("AADSTS90008")) {
+      throw new Error(
+        "Microsoft has not consented this app to send mail as the signed-in user. Add the delegated Mail.Send permission to the app registration and grant admin consent.",
+      );
+    }
+    throw new Error(`On-behalf-of token request failed (${res.status}): ${text}`);
+  }
+
+  const json = (await res.json()) as { access_token: string };
+  return json.access_token;
 }
 
 /**
@@ -92,15 +136,8 @@ export interface SendMailInput {
   saveToSentItems?: boolean;
 }
 
-/**
- * Sends as GRAPH_SENDER_UPN using the `Mail.Send` application permission.
- * Scope that permission to the single sending mailbox with an application
- * access policy — see SETUP-ENTRA.md — or the app can mail as anyone.
- */
-export async function sendMail(input: SendMailInput): Promise<void> {
-  const sender = requireEnv("GRAPH_SENDER_UPN");
-
-  const message = {
+function buildMessage(input: SendMailInput) {
+  return {
     subject: input.subject,
     body: { contentType: "HTML", content: input.html },
     toRecipients: input.to.map((address) => ({ emailAddress: { address } })),
@@ -112,10 +149,48 @@ export async function sendMail(input: SendMailInput): Promise<void> {
       contentBytes: Buffer.from(a.content, "utf8").toString("base64"),
     })),
   };
+}
 
-  const res = await graphFetch(`/users/${encodeURIComponent(sender)}/sendMail`, {
+/**
+ * Sends from the signed-in user's own mailbox via on-behalf-of. `userAssertion`
+ * is the bearer token they presented to this API.
+ */
+export async function sendMailAsUser(
+  userAssertion: string,
+  input: SendMailInput,
+): Promise<void> {
+  const token = await getDelegatedToken(userAssertion, "https://graph.microsoft.com/Mail.Send");
+
+  const res = await graphFetch(
+    "/me/sendMail",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        message: buildMessage(input),
+        saveToSentItems: input.saveToSentItems ?? true,
+      }),
+    },
+    token,
+  );
+
+  if (!res.ok) {
+    throw new Error(`Graph sendMail failed (${res.status}): ${await res.text()}`);
+  }
+}
+
+/**
+ * Sends from a named mailbox using the app-only `Mail.Send` permission. Used
+ * only where there is no signed-in user to send as — the reviewer follows a
+ * capability link, not a login, so their decision notice is sent from their own
+ * mailbox by the app.
+ */
+export async function sendMailAsApp(fromUpn: string, input: SendMailInput): Promise<void> {
+  const res = await graphFetch(`/users/${encodeURIComponent(fromUpn)}/sendMail`, {
     method: "POST",
-    body: JSON.stringify({ message, saveToSentItems: input.saveToSentItems ?? true }),
+    body: JSON.stringify({
+      message: buildMessage(input),
+      saveToSentItems: input.saveToSentItems ?? true,
+    }),
   });
 
   if (!res.ok) {
@@ -123,9 +198,10 @@ export async function sendMail(input: SendMailInput): Promise<void> {
   }
 }
 
+/** Enough config to call Graph at all. */
 export function isGraphConfigured(): boolean {
   return Boolean(
-    process.env.AZURE_CLIENT_SECRET && process.env.GRAPH_SENDER_UPN && process.env.AZURE_TENANT_ID,
+    process.env.AZURE_CLIENT_SECRET && process.env.AZURE_TENANT_ID && process.env.AZURE_CLIENT_ID,
   );
 }
 

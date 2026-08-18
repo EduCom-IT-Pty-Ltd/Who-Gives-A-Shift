@@ -9,6 +9,8 @@ import { bearerFrom, hasGroupOverage, verifyAccessToken, type EntraClaims } from
 export interface AuthContext {
   claims: EntraClaims;
   user: User;
+  /** The caller's raw bearer token, for on-behalf-of exchanges. */
+  accessToken: string;
   /** Entra security-group object IDs this user belongs to. */
   groupIds: string[];
   isAdmin: boolean;
@@ -51,7 +53,8 @@ function intersects(a: string[], b: string[]): boolean {
  * Entra group memberships. Call this at the top of every authenticated route.
  */
 export async function authenticate(request: Request): Promise<AuthContext> {
-  const claims = await verifyAccessToken(bearerFrom(request));
+  const accessToken = bearerFrom(request);
+  const claims = await verifyAccessToken(accessToken);
   const groupIds = await resolveGroupIds(claims);
   const isAdmin = intersects(groupIds, adminGroupIds());
 
@@ -74,7 +77,7 @@ export async function authenticate(request: Request): Promise<AuthContext> {
     })
     .returning();
 
-  return { claims, user, groupIds, isAdmin };
+  return { claims, user, accessToken, groupIds, isAdmin };
 }
 
 export async function loadStore(storeId: string): Promise<Store> {

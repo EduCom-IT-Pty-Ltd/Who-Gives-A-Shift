@@ -7,7 +7,7 @@ the pay cycle, and submit them for review.
 - **Pay cycle:** Thursday → Wednesday
 - **Sign-in:** Microsoft Entra ID, single-tenant, MSAL auth-code + PKCE
 - **Roles:** Entra security groups
-- **Submission:** emailed via Microsoft Graph to `ahaworth@educomit.com.au`
+- **Submission:** emailed from the manager's own mailbox via Microsoft Graph to `ahaworth@educomit.com.au`
 - **Stack:** Next.js 15 (App Router) · TypeScript · Drizzle · Neon Postgres · Vercel
 
 ---
@@ -28,7 +28,9 @@ correct the actual start, finish and break, add any unrostered days, then
 
 Submitting **locks the pay period** — no further roster or hours edits for those
 dates — and emails the reviewer a summary with two CSVs attached (per-person
-totals, and shift-by-shift detail).
+totals, and shift-by-shift detail). The email is sent **on behalf of the manager
+who submitted it**: it leaves from their mailbox, appears in their Sent Items,
+and a reply goes straight back to them rather than to a shared service account.
 
 **The reviewer** is outside the tenant, so they get a signed capability link
 rather than a login. It opens a read-only summary where they can **Approve**
@@ -44,8 +46,8 @@ Every state change is written to `audit_log`.
 ### 1. Entra ID
 
 Follow **[SETUP-ENTRA.md](SETUP-ENTRA.md)** first — one app registration, one
-scope, three Graph permissions, and the security groups. Nothing else works
-until that is done.
+exposed scope, four Graph permissions, and one security group. Nothing else
+works until that is done.
 
 ### 2. Database
 
@@ -53,14 +55,16 @@ Create a Neon project (pick the region closest to your stores —
 `ap-southeast-2` for Australia) and copy the pooled connection string into
 `DATABASE_URL`.
 
-Then push the schema:
+Then apply the schema:
 
 ```bash
-npm run db:push
+npm run db:migrate
 ```
 
-`drizzle/0000_*.sql` is the same schema as a checked-in migration if you would
-rather apply it by hand.
+That runs the checked-in migrations in `drizzle/` and records what it applied —
+use it for anything real. `npm run db:push` diffs the schema straight onto the
+database without a migration record; it is quicker while iterating locally, but
+do not point it at production.
 
 ### 3. Local development
 
@@ -68,15 +72,31 @@ rather apply it by hand.
 cp .env.example .env.local
 ```
 
-Fill in `.env.local`, then:
+Put your real values in **`.env.local`**, never in `.env.example` —
+`.env.example` is committed to the repo and must only ever contain
+placeholders. `.env.local` is gitignored.
+
+Check everything before you rely on it:
+
+```bash
+npm run verify
+```
+
+That proves the Entra credentials work, the Graph permissions are consented,
+and Neon is reachable with the schema applied. It never prints a secret. Run it
+again first thing if anything mysteriously stops working — an expired client
+secret is the most likely culprit.
+
+Then:
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000 and sign in. As a member of `WGAS Admins` you will
-see the **Admin** tab — create your first store there, paste in its manager
-group's object ID, and you are ready to roster.
+Open http://localhost:3000 and sign in. As a member of `SG-WGAS-Admins` you will
+see the **Admin** tab — create your first store there and leave its manager group
+blank. Admins manage every store, so you can go straight to the Roster page, add
+staff from the directory, and start rostering.
 
 ### 4. Deploy to Vercel
 
@@ -84,7 +104,7 @@ group's object ID, and you are ready to roster.
 npx vercel link
 ```
 
-Add every variable from `.env.example` in **Project → Settings → Environment
+Add every variable from your `.env.local` in **Project → Settings → Environment
 Variables** (Production *and* Preview), then:
 
 ```bash
@@ -135,7 +155,14 @@ with *Re-send email*; a period that reached payroll but stayed editable is not.
 
 **Authorisation and rostering are separate.** Entra group membership decides who
 *may manage* a store; the `store_members` table decides who *appears on* its
-roster.
+roster. That is why you can roster staff today without any per-store groups
+existing — admins manage everything until you create them.
+
+**Mail uses two different Graph flows.** The submission goes out delegated
+(on-behalf-of the manager). The reviewer's approve / send-back notice is the one
+case with no signed-in user — the reviewer follows a capability link — so it is
+sent app-only from the reviewer's own mailbox, and is skipped gracefully if that
+permission is not granted.
 
 ---
 
@@ -145,7 +172,9 @@ roster.
 npm run dev         # local dev server
 npm run build       # production build
 npm run typecheck   # tsc --noEmit
-npm run db:push     # apply schema to Neon
+npm run verify      # check Entra, Graph permissions and Neon against .env.local
+npm run db:migrate  # apply checked-in migrations (use this for production)
+npm run db:push     # diff schema straight onto the database (local iteration only)
 npm run db:generate # regenerate SQL migrations after a schema change
 npm run db:studio   # browse the database
 ```
@@ -157,6 +186,9 @@ npm run db:studio   # browse the database
 - **Client secret expiry.** Sign-in keeps working; the submission email stops.
   The app says so plainly rather than failing silently, and *Re-send email*
   recovers once the secret is rotated.
+- **Managers need a licensed mailbox.** Sending on behalf of the signed-in user
+  means whoever submits must have an Exchange Online mailbox. An unlicensed
+  account can roster fine but cannot submit.
 - **Timezones are per store.** Set the IANA name on the Admin screen. It decides
   what "today" and "this cycle" mean for that store.
 - **Removing staff is a soft delete.** Rostered history has to survive someone

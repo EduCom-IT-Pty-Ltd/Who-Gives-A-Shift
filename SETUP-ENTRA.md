@@ -88,46 +88,41 @@ the audience claim tidy.)
 
 ---
 
-## 5. Graph application permissions
+## 5. Graph permissions
 
-**API permissions → Add a permission → Microsoft Graph → Application permissions**
+**API permissions → Add a permission → Microsoft Graph**
+
+Under **Delegated permissions**:
 
 | Permission | Why |
 | --- | --- |
-| `Mail.Send` | Sends the timesheet to the reviewer |
+| `Mail.Send` | Sends the timesheet **as the signed-in manager** |
+
+Under **Application permissions**:
+
+| Permission | Why |
+| --- | --- |
 | `User.Read.All` | Directory type-ahead when adding staff to a store |
 | `GroupMember.Read.All` | Group lookup fallback when a token hits the overage limit |
+| `Mail.Send` | Sends the reviewer's approve / send-back notice |
 
-Then click **Grant admin consent for \<tenant\>**. All three are app-only, so
-they do nothing until consent is granted.
+Then click **Grant admin consent for \<tenant\>**.
 
-If you configured *Groups assigned to the application* in step 4 and your
-directory is small, `GroupMember.Read.All` is optional — but without it, a user
-in many groups will silently lose their manager role. Granting it is safer.
+### Why both kinds
 
-### Restrict `Mail.Send` to one mailbox
+The submission email is sent **on behalf of the manager who submitted it**. It
+leaves from their own mailbox, lands in their Sent Items, and when Allan hits
+reply it goes straight back to them — no shared service mailbox involved. That
+is the delegated `Mail.Send`.
 
-`Mail.Send` as an application permission means *send as anyone in the tenant*.
-Scope it down. In Exchange Online PowerShell:
+The approve / send-back notice is the one case with no signed-in user: the
+reviewer follows a capability link rather than logging in. That notice is sent
+from the reviewer's own mailbox (`REVIEWER_EMAIL`) by the app, which needs the
+application `Mail.Send`.
 
-```powershell
-New-ApplicationAccessPolicy `
-  -AppId "<client-id>" `
-  -PolicyScopeGroupId "rosters@yourtenant.com.au" `
-  -AccessRight RestrictAccess `
-  -Description "Who Gives A Shift may only send as the rosters mailbox"
-```
-
-Then confirm it took effect:
-
-```powershell
-Test-ApplicationAccessPolicy -Identity "someone.else@yourtenant.com.au" -AppId "<client-id>"
-```
-
-That should come back **Denied**. Policy changes can take up to an hour to
-propagate.
-
----
+If you would rather not grant application `Mail.Send` at all, the app degrades
+cleanly — the decision is still recorded and the manager sees it in-app the next
+time they open the period; they just do not get an email about it.
 
 ## 6. Client secret
 
@@ -142,21 +137,30 @@ plainly and the manager can use **Re-send email** once you rotate it.
 
 ## 7. Security groups
 
-Create these in **Entra ID → Groups** (type: Security):
+Only one group is needed to get running:
 
 | Group | Purpose | Where it goes |
 | --- | --- | --- |
-| `WGAS Admins` | Full access to every store and the Admin screen | `ENTRA_ADMIN_GROUP_IDS` |
-| `WGAS Managers – <Store>` | One per store; can roster and submit for that store | Admin screen, per store |
-| `WGAS Staff` *(optional)* | Allow-list of who may sign in at all | `ENTRA_STAFF_GROUP_IDS` |
+| `SG-WGAS-Admins` | Full access to every store and the Admin screen | `ENTRA_ADMIN_GROUP_IDS` |
 
-Copy each group's **Object ID**. Add yourself to `WGAS Admins` before first
-sign-in, or nobody can create the first store.
+Copy its **Object ID** from **Entra ID → Groups → SG-WGAS-Admins → Overview**
+into `ENTRA_ADMIN_GROUP_IDS`. Make sure you are a *member*, not only an owner —
+ownership does not put you in the `groups` claim.
 
-Leaving `ENTRA_STAFF_GROUP_IDS` blank lets any account in your tenant sign in —
-they will simply see an empty "My shifts" page until a manager rosters them.
+Admins manage every store, so leave each store's manager group blank on the
+Admin screen for now. Staff are added to a store's roster individually through
+the directory search on the Roster page; that is independent of group
+membership, so nothing else needs setting up before you can roster people.
 
----
+### Later, when you split stores out
+
+Create one `SG-WGAS-Managers-<Store>` group per location, paste its object ID
+against that store on the Admin screen, and its members gain roster and submit
+rights for that store only. Admins keep access to everything either way.
+
+Optionally set `ENTRA_STAFF_GROUP_IDS` to a group that gates who can sign in at
+all. Left blank, any account in your tenant can sign in — they simply see an
+empty "My shifts" page until someone rosters them.
 
 ## Checklist
 
@@ -164,7 +168,8 @@ they will simply see an empty "My shifts" page until a manager rosters them.
 - [ ] SPA redirect URIs for localhost and production
 - [ ] `api://<client-id>/access_as_user` exposed and self-authorised
 - [ ] Groups claim on access tokens, as Group ID
-- [ ] `Mail.Send`, `User.Read.All`, `GroupMember.Read.All` granted admin consent
-- [ ] `Mail.Send` restricted with an application access policy
+- [ ] Delegated `Mail.Send` added
+- [ ] Application `User.Read.All`, `GroupMember.Read.All`, `Mail.Send` added
+- [ ] Admin consent granted for all of the above
 - [ ] Client secret created and its expiry diarised
-- [ ] `WGAS Admins` group created and you are in it
+- [ ] `SG-WGAS-Admins` created, you are a **member**, object ID in `ENTRA_ADMIN_GROUP_IDS`

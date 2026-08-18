@@ -68,6 +68,10 @@ export function SubmitDialog({
           <strong className="nums">{formatHours(totalMinutes)}</strong> hours for{" "}
           {formatRange(startDate, endDate)} to <strong>{reviewerEmail}</strong>.
         </p>
+        <p className="text-muted">
+          It goes from your own mailbox, so you will find it in Sent Items and any reply comes
+          back to you.
+        </p>
 
         <Note tone="warn">
           This locks the pay period. Nobody can change the roster or hours for these dates

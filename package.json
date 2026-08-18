@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "verify": "node --env-file=.env.local scripts/verify-config.mjs",
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"
   },

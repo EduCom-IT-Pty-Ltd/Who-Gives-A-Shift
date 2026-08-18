@@ -67,8 +67,8 @@ function Admin() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Stores</h1>
         <p className="text-sm text-muted">
-          Each store is managed by the Entra security group set against it. Anyone in that group
-          can roster and submit for the store.
+          Admins manage every store. To hand a store to its own manager later, put their
+          Entra security group&rsquo;s object ID against it below — until then, leave it blank.
         </p>
       </div>
 
@@ -131,7 +131,7 @@ function Admin() {
                   <Badge>{store.code}</Badge>
                   <Badge>{store.timezone}</Badge>
                   {!store.active && <Badge tone="bad">Inactive</Badge>}
-                  {!store.managerGroupId && <Badge tone="warn">No manager group</Badge>}
+                  {!store.managerGroupId && <Badge>Admins only</Badge>}
                   <Button
                     className="ml-auto"
                     onClick={() => void patch(store.id, { active: !store.active })}

@@ -6,7 +6,7 @@ import { authenticate } from "@/lib/auth/context";
 import { recordAudit } from "@/lib/audit";
 import { badRequest, conflict, json, route } from "@/lib/api";
 import { appBaseUrl, reviewerEmail } from "@/lib/env";
-import { isGraphConfigured, sendMail } from "@/lib/graph";
+import { isGraphConfigured, sendMailAsUser } from "@/lib/graph";
 import { isPayPeriodSubmittable, payPeriodFor } from "@/lib/pay-period";
 import { createReviewToken } from "@/lib/review-token";
 import {
@@ -97,7 +97,7 @@ export const POST = route(async (request: Request, { params }: Params) => {
     emailError = "Microsoft Graph is not configured, so no email was sent.";
   } else {
     try {
-      await sendMail({
+      await sendMailAsUser(auth.accessToken, {
         to: [to],
         subject: submissionSubject(summary),
         html: submissionEmailHtml(summary, reviewUrl),

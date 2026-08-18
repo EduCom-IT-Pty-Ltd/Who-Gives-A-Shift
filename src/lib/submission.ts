@@ -213,7 +213,8 @@ export function submissionEmailHtml(summary: SubmissionSummary, reviewUrl: strin
     </p>
     <p style="margin:0;color:#79808d;font-size:12px">
       The link opens a read-only summary where you can approve or send it back. It expires in 30 days.
-      Full line-by-line detail is attached as CSV.
+      Full line-by-line detail is attached as CSV. Replying to this email goes straight back to
+      ${escapeHtml(summary.submittedBy)}.
     </p>
   </div>
 </body></html>`;
