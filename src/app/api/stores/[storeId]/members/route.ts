@@ -85,6 +85,7 @@ export const POST = route(async (request: Request, { params }: Params) => {
       role: member.role,
       employmentType: member.employmentType,
       active: member.active,
+      standardShifts: [],
     } satisfies MemberDto,
     201,
   );

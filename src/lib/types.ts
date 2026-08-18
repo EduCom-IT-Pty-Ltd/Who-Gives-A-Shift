@@ -14,6 +14,17 @@ export interface MeResponse {
   stores: StoreSummary[];
 }
 
+export interface StandardShiftDto {
+  id: string;
+  /** 0 = Sunday, matching `Date#getUTCDay`. */
+  weekday: number;
+  startTime: string;
+  endTime: string;
+  breakMinutes: number;
+  label: string | null;
+  workedMinutes: number;
+}
+
 export interface MemberDto {
   id: string;
   userId: string;
@@ -22,6 +33,8 @@ export interface MemberDto {
   role: "manager" | "staff";
   employmentType: string | null;
   active: boolean;
+  /** The recurring week this person works, empty when nothing is defined. */
+  standardShifts: StandardShiftDto[];
 }
 
 export interface ShiftDto {

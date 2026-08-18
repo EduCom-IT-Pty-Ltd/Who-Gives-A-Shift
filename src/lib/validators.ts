@@ -21,3 +21,16 @@ export const shiftBody = z.object({
 export const shiftPatchBody = shiftBody.partial().omit({ userId: true }).extend({
   userId: z.string().uuid().optional(),
 });
+
+export const standardShiftBody = z.object({
+  weekday: z.number().int().min(0).max(6),
+  startTime: clockTime,
+  endTime: clockTime,
+  breakMinutes: z.number().int().min(0).max(720).default(0),
+  label: z.string().trim().max(60).nullish(),
+});
+
+/** The editor always submits the whole week, so the payload is the whole week. */
+export const standardHoursBody = z.object({
+  shifts: z.array(standardShiftBody).max(21),
+});

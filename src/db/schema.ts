@@ -87,6 +87,34 @@ export const storeMembers = pgTable(
 );
 
 /**
+ * A staff member's recurring week. Full-time and part-time staff work the same
+ * pattern every cycle, so it is described once here and stamped onto a cycle as
+ * draft shifts rather than retyped weekly. Rows are per weekday, and more than
+ * one row per weekday expresses a split shift.
+ */
+export const memberStandardShifts = pgTable(
+  "member_standard_shifts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    storeMemberId: uuid("store_member_id")
+      .notNull()
+      .references(() => storeMembers.id, { onDelete: "cascade" }),
+    /** 0 = Sunday, matching `Date#getUTCDay` as used throughout `lib/dates`. */
+    weekday: integer("weekday").notNull(),
+    startTime: time("start_time").notNull(),
+    endTime: time("end_time").notNull(),
+    breakMinutes: integer("break_minutes").notNull().default(0),
+    label: text("label"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("member_standard_shifts_slot_uq").on(t.storeMemberId, t.weekday, t.startTime),
+    index("member_standard_shifts_member_idx").on(t.storeMemberId),
+  ],
+);
+
+/**
  * A rostered shift. Times are stored as a local date plus wall-clock times
  * rather than instants: a roster written as "Thu 9:00–17:00" must stay that way
  * across a daylight-saving boundary. Overnight shifts are implied by
@@ -194,6 +222,7 @@ export type Store = typeof stores.$inferSelect;
 export type AppSettings = typeof appSettings.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type StoreMember = typeof storeMembers.$inferSelect;
+export type MemberStandardShift = typeof memberStandardShifts.$inferSelect;
 export type Shift = typeof shifts.$inferSelect;
 export type PayPeriod = typeof payPeriods.$inferSelect;
 export type TimesheetEntry = typeof timesheetEntries.$inferSelect;
