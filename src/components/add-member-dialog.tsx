@@ -95,7 +95,7 @@ export function AddMemberDialog({
         {error && <Note tone="bad">{error}</Note>}
         {searching && <Loading label="Searching…" />}
         {!searching && results.length > 0 && (
-          <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+          <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
             {results.map((user) => (
               <li key={user.id} className="flex items-center gap-3 px-3 py-2.5">
                 <div className="min-w-0 flex-1">

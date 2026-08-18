@@ -100,16 +100,30 @@ staff from the directory, and start rostering.
 
 ### 4. Deploy to Vercel
 
-```bash
-npx vercel link
-```
+On the import screen, **delete every environment variable Vercel detected**.
+They are read from `.env.example`, so they carry placeholders, and Vercel will
+not let you deploy while any row has a blank value. The first build succeeds
+without them — the app simply reports that it needs configuring.
 
-Add every variable from your `.env.local` in **Project → Settings → Environment
-Variables** (Production *and* Preview), then:
+Then set the real ones from the file you already validated:
 
 ```bash
+npx vercel login && npx vercel link
+./scripts/push-env-to-vercel.sh
 npx vercel --prod
 ```
+
+The final redeploy matters: `NEXT_PUBLIC_*` values are inlined into the browser
+bundle at build time, so changing them in the dashboard has no effect until
+something rebuilds.
+
+Two more things before it works in production:
+
+- Add the deployment origin (`https://<project>.vercel.app`, plus any custom
+  domain) to the app registration's **SPA redirect URIs**.
+- `REVIEW_LINK_SECRET` must be **identical** everywhere. Reviewer links are
+  HMAC-signed with it, so a link minted locally will not verify in production if
+  the secrets differ.
 
 `APP_BASE_URL` is only needed if you use a custom domain — otherwise the
 reviewer link is built from Vercel's own URL. Remember to add the production

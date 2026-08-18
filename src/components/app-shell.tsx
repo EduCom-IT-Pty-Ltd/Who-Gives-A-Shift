@@ -8,6 +8,7 @@ import { useApi } from "@/lib/api-client";
 import { useAsync } from "@/lib/use-async";
 import { loginRequest } from "@/lib/msal";
 import type { MeResponse } from "@/lib/types";
+import { BrandLockup, LogoLockup } from "./brand";
 import { Button, Loading, Note } from "./ui";
 
 const MeContext = createContext<MeResponse | null>(null);
@@ -22,19 +23,26 @@ function SignIn() {
   const { instance } = useMsal();
   return (
     <main className="grid min-h-dvh place-items-center p-6">
-      <div className="w-full max-w-sm text-center">
-        <p className="mb-1 text-xs font-medium uppercase tracking-[0.14em] text-muted">Kee</p>
-        <h1 className="mb-2 text-2xl font-semibold tracking-tight">Who Gives A Shift</h1>
-        <p className="mb-7 text-sm text-muted">
-          Rosters and timesheets, signed in with your work account.
-        </p>
-        <Button
-          variant="primary"
-          className="w-full"
-          onClick={() => void instance.loginRedirect(loginRequest)}
-        >
-          Sign in with Microsoft
-        </Button>
+      <div className="w-full max-w-sm overflow-hidden rounded-3xl border border-border bg-surface text-center shadow-[0_18px_50px_-24px_rgba(20,33,61,0.45)]">
+        <div className="brand-rule h-1.5" />
+        {/* Cream plaque: the artwork was drawn for a warm light ground, so it
+            keeps one in either theme. */}
+        <div className="bg-[#fdf8f2] px-6 py-7">
+          <LogoLockup width={320} className="mx-auto h-auto w-[min(17rem,100%)]" />
+        </div>
+        <div className="px-6 py-7">
+          <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-muted">Kee</p>
+          <p className="mb-6 text-sm text-muted">
+            Rosters and timesheets, signed in with your work account.
+          </p>
+          <Button
+            variant="primary"
+            className="w-full"
+            onClick={() => void instance.loginRedirect(loginRequest)}
+          >
+            Sign in with Microsoft
+          </Button>
+        </div>
       </div>
     </main>
   );
@@ -54,10 +62,10 @@ function Nav({ me }: { me: MeResponse }) {
   const links = me.isAdmin ? [...NAV, { href: "/admin", label: "Admin" } as const] : NAV;
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-surface/85 backdrop-blur">
+    <header className="sticky top-0 z-10 bg-surface/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-        <Link href="/" className="text-sm font-semibold tracking-tight">
-          Who Gives A Shift
+        <Link href="/" aria-label="Who Gives A Shift — home">
+          <BrandLockup />
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           {links.map((link) => {
@@ -68,8 +76,10 @@ function Nav({ me }: { me: MeResponse }) {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`rounded-lg px-2.5 py-1.5 transition ${
-                  active ? "bg-accent-soft font-medium text-ink" : "text-muted hover:text-ink"
+                className={`rounded-full px-3 py-1.5 font-bold transition ${
+                  active
+                    ? "bg-accent-soft text-accent"
+                    : "text-muted hover:bg-surface-2 hover:text-ink"
                 }`}
               >
                 {link.label}
@@ -89,6 +99,7 @@ function Nav({ me }: { me: MeResponse }) {
           </Button>
         </div>
       </div>
+      <div className="brand-rule h-1" />
     </header>
   );
 }

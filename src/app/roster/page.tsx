@@ -197,7 +197,7 @@ function RosterBoard() {
                                   setSeed(null);
                                   setEditing(shift);
                                 }}
-                                className={`rounded-lg border px-2 py-1.5 text-left text-xs transition hover:border-accent ${
+                                className={`rounded-xl border px-2 py-1.5 text-left text-xs transition hover:border-accent ${
                                   shift.status === "published"
                                     ? "border-transparent bg-accent-soft"
                                     : "border-dashed border-border-strong bg-surface-2"
@@ -219,7 +219,7 @@ function RosterBoard() {
                                 setEditing(null);
                                 setSeed({ userId: member.userId, workDate: day });
                               }}
-                              className="rounded-lg border border-dashed border-border px-2 py-1 text-xs text-muted transition hover:border-accent hover:text-accent"
+                              className="rounded-xl border border-dashed border-border px-2 py-1 text-xs text-muted transition hover:border-accent hover:text-accent"
                             >
                               +
                             </button>

@@ -87,7 +87,7 @@ export function SubmitDialog({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Anything unusual this cycle — public holiday rates, a sick day, unrostered overtime…"
-            className="w-full rounded-lg border border-border bg-surface px-3 py-2 outline-none focus:border-accent"
+            className="w-full rounded-xl border border-border bg-surface px-3 py-2 outline-none transition focus:border-accent"
           />
         </label>
       </div>

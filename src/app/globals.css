@@ -1,42 +1,67 @@
 @import "tailwindcss";
 
+/*
+ * Palette sampled straight out of the logo artwork:
+ *   blue #0049b9 · coral #fb593f · yellow #fdc126 · cream #fdf8f2 · brown #a85b2a
+ * Everything else is derived from those five so the UI reads as one family.
+ */
 :root {
-  --bg: #f5f6f8;
+  --brand-blue: #0049b9;
+  --brand-coral: #fb593f;
+  --brand-yellow: #fdc126;
+  --brand-cream: #fdf8f2;
+  --brand-brown: #a85b2a;
+  /* The logo coral is a mid-tone, so buttons use a deeper cut of it to keep
+     label contrast; the flat brand colour stays for logotype and accents. */
+  --brand-coral-strong: #dc4222;
+  --brand-coral-ink: #ffffff;
+
+  --bg: #fdf8f2;
   --surface: #ffffff;
-  --surface-2: #fafbfc;
-  --border: #e2e5ea;
-  --border-strong: #cfd4dc;
-  --ink: #171a1f;
-  --muted: #667085;
-  --accent: #3a4fd8;
+  --surface-2: #fbf5ed;
+  --border: #ece1d3;
+  --border-strong: #d8c9b6;
+  --ink: #14213d;
+  --muted: #5f6e85;
+  --accent: #0049b9;
   --accent-ink: #ffffff;
-  --accent-soft: #eceffd;
-  --good: #12734a;
-  --good-soft: #e6f4ec;
-  --warn: #9a5b06;
-  --warn-soft: #fdf1de;
-  --bad: #b3261e;
-  --bad-soft: #fdeceb;
+  --accent-soft: #e4edfc;
+  --good: #0c7554;
+  --good-soft: #ddf2ea;
+  --warn: #8f5c04;
+  --warn-soft: #fdefcf;
+  --bad: #cc3a20;
+  --bad-soft: #ffe8e3;
+
+  --radius: 0.875rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0d1015;
-    --surface: #161a21;
-    --surface-2: #1b202a;
-    --border: #262c36;
-    --border-strong: #363e4b;
-    --ink: #e8eaee;
-    --muted: #98a1af;
-    --accent: #8098ff;
-    --accent-ink: #10131a;
-    --accent-soft: #1c2440;
-    --good: #5ad3a0;
-    --good-soft: #16281f;
-    --warn: #e5ab5e;
-    --warn-soft: #2b2113;
-    --bad: #ef8a84;
-    --bad-soft: #2c1817;
+    /* The logo's own colours stay lit for artwork; only the typeset
+       wordmark needs lighter values to hold contrast on navy. */
+    --brand-blue: #6f9dff;
+    --brand-coral: #ff7f68;
+    --brand-yellow: #ffd15e;
+    --brand-coral-strong: #ff7f68;
+    --brand-coral-ink: #3a1008;
+
+    --bg: #0b1424;
+    --surface: #131f33;
+    --surface-2: #182742;
+    --border: #22334f;
+    --border-strong: #35496b;
+    --ink: #edf2fa;
+    --muted: #94a6c0;
+    --accent: #7fa8ff;
+    --accent-ink: #061020;
+    --accent-soft: #17294a;
+    --good: #4fd2a5;
+    --good-soft: #0e2b23;
+    --warn: #ffc45c;
+    --warn-soft: #322611;
+    --bad: #ff8a72;
+    --bad-soft: #35191a;
   }
 }
 
@@ -57,6 +82,16 @@
   --color-warn-soft: var(--warn-soft);
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-coral: var(--brand-coral);
+  --color-brand-coral-strong: var(--brand-coral-strong);
+  --color-brand-coral-ink: var(--brand-coral-ink);
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-brown: var(--brand-brown);
+
+  --font-display: var(--font-fredoka), ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --font-sans: var(--font-nunito), ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
 }
 
 html,
@@ -66,9 +101,29 @@ body {
 }
 
 body {
-  font-family:
-    ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-nunito), ui-rounded, "SF Pro Rounded", -apple-system, "Segoe UI",
+    system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Headings carry the logo's rounded display face; body copy stays in Nunito. */
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-fredoka), ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* The three-colour rule under the header — a slice of the logo's palette. */
+.brand-rule {
+  background: linear-gradient(
+    90deg,
+    var(--brand-blue) 0 38%,
+    var(--brand-yellow) 38% 52%,
+    var(--brand-coral) 52% 100%
+  );
 }
 
 /* Tabular figures keep hour columns from jittering as values change. */
@@ -79,7 +134,7 @@ body {
 *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 input,

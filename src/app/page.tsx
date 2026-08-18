@@ -41,13 +41,13 @@ function MyShifts() {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/roster"
-            className="rounded-lg border border-border bg-surface px-3.5 py-2 text-sm font-medium hover:bg-surface-2"
+            className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-bold transition hover:border-accent hover:bg-surface-2"
           >
             Build the roster
           </Link>
           <Link
             href="/timesheets"
-            className="rounded-lg border border-border bg-surface px-3.5 py-2 text-sm font-medium hover:bg-surface-2"
+            className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-bold transition hover:border-accent hover:bg-surface-2"
           >
             Review hours &amp; submit
           </Link>

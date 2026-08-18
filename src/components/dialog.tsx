@@ -38,7 +38,7 @@ export function Dialog({
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      className="m-auto w-[min(30rem,calc(100vw-2rem))] rounded-xl border border-border bg-surface p-0 text-ink backdrop:bg-black/40"
+      className="m-auto w-[min(30rem,calc(100vw-2rem))] rounded-2xl border border-border bg-surface p-0 text-ink shadow-2xl backdrop:bg-[#14213d]/45 backdrop:backdrop-blur-sm"
     >
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold">{title}</h2>
@@ -46,7 +46,7 @@ export function Dialog({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="rounded-lg px-2 py-1 text-muted hover:bg-surface-2 hover:text-ink"
+          className="rounded-full px-2 py-1 text-muted transition hover:bg-surface-2 hover:text-ink"
         >
           ✕
         </button>
